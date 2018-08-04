@@ -23,9 +23,24 @@ endif()
 
 if (NOT RAJA_LOADED)
   set (RAJA_LOADED "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
-  set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+
+  if (PARENT_SCOPE)
+    set (RAJA_LOADED ${RAJA_LOADED} PARENT_SCOPE)
+  endif ()
 
   mark_as_advanced(RAJA_LOADED)
+
+  if (ENABLE_CUDA)
+    cmake_minimum_required(VERSION 3.9)
+  else()
+    cmake_minimum_required(VERSION 3.2)
+  endif()
+
+  message(STATUS "Using CMake version ${CMAKE_VERSION")
+
+  if(POLICY CMP0057)
+      cmake_policy(SET CMP0057 NEW)
+  endif()
 
   # C is required for googletest to find Threads
   project(RAJA LANGUAGES CXX C
@@ -55,12 +70,6 @@ if (NOT RAJA_LOADED)
   option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 
   set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
-
-  if (ENABLE_CUDA)
-    cmake_minimum_required(VERSION 3.9)
-  else()
-    cmake_minimum_required(VERSION 3.2)
-  endif()
 
   if (NOT BLT_LOADED) 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/blt/SetupBLT.cmake)
