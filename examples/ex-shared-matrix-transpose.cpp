@@ -106,17 +106,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define TILE dimensions
   //
-  const int TILE_DIM0   = 3;
   const int TILE_DIM1   = 2;
+  const int TILE_DIM0   = 3;
 
   //
   // Define bounds for inner and outer loops
   //
-  const int inner_Dim0 = TILE_DIM0;
   const int inner_Dim1 = TILE_DIM1;
+  const int inner_Dim0 = TILE_DIM0;
 
-  const int outer_Dim0 = Ncols/TILE_DIM0;
   const int outer_Dim1 = Nrows/TILE_DIM1;
+  const int outer_Dim0 = Ncols/TILE_DIM0;
 
   //
   // Initialize matrix data
@@ -127,6 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   }
 
+  printf("Printing intial matrix ... \n");
   printResult<int>(Aview, Nrows, Ncols);
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix transpose...\n";
@@ -139,52 +140,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int by = 0; by < outer_Dim1; ++by) {
     for (int bx = 0; bx < outer_Dim0; ++bx) {
 
-      int TILE[TILE_DIM1*TILE_DIM0];
-      //
-      // (1) Inner loops to load data into the tile
-      //
-      for (int ty = 0; ty < inner_Dim1; ++ty) {
-        for (int tx = 0; tx < inner_Dim0; ++tx) {
+      //TILE 2 x 3 
+      int TILE[inner_Dim1][inner_Dim0];
 
-          int col = bx * TILE_DIM0 + tx;  // Matrix column index
-          int row = by * TILE_DIM1 + ty;  // Matrix row index
-          int tid = tx + TILE_DIM0*ty;
-          //printf("%d %d \n",row, col):
-          TILE[tid] = Aview(row, col);          
+      for (int ty = 0; ty < inner_Dim1; ++ty) { // 0 - 1
+        for (int tx = 0; tx < inner_Dim0; ++tx) {//0 - 3
+          int col = bx * inner_Dim0 + tx;  // Matrix column index
+          int row = by * inner_Dim1 + ty;  // Matrix row index
+          TILE[ty][tx] = Aview(row, col);
         }
       }
-      //
-      // (2) Inner loops to read data from the tile
-      //
-      for (int tx = 0; tx < inner_Dim0; ++tx) {
-        for (int ty = 0; ty < inner_Dim1; ++ty) {
 
-          //int col = bx * TILE_DIM0 + tx;  // Transposed matrix column index
-          //int row = by * TILE_DIM1 + ty;  // Transposed matrix row index
-          //int tid = tx + TILE_DIM0 * ty;
-          //Atview(col, row) = TILE[tid];
-
-          //swap row and column 
-          int col = by * inner_Dim0 + tx;
-          int row = bx * inner_Dim1 + ty;
-
-          int tid = ty  + inner_Dim1 * tx;
-          //int gId = row + Nrows * col;
-          int gId = col + Ncols * row;
-
-          printf("gId = %d \n",gId);
-          //printf("tid = %d \n", tid);
-          Atview(col, row) = TILE[tid];
+      for (int tx = 0; tx < inner_Dim0; ++tx) { //0 - 3
+        for (int ty = 0; ty < inner_Dim1; ++ty) { // 0 - 1
+          int col = bx * inner_Dim0 + tx;  // Transposed matrix column index
+          int row = by * inner_Dim1 + ty;  // Transposed matrix row index
+          Atview(col, row) = TILE[ty][tx];
         }
       }
-      //exit(-1);
 
     }
   }
-
-  //checkResult<int>(Aview, Atview, Nrows, Ncols);
-  //printResult<int>(Atview, Ncols, Nrows);
-  ///  exit(-1);
+ 
   //----------------------------------------------------------------------------//
 
   //
@@ -206,7 +183,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::make_tuple(RAJA::RangeSegment(0,Ncols), RAJA::RangeSegment(0,Nrows));
 
   //----------------------------------------------------------------------------//
-  std::cout << "\n Running sequential shared matrix transpose ...\n";
+  std::cout << "\n Running RAJA shared matrix transpose ...\n";
   std::memset(At, 0, Nrows * Ncols * sizeof(int));
 
   //
@@ -225,7 +202,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
                                       int,
                                       RAJA::ArgList<1, 0>,
-                                      RAJA::SizeList<TILE_DIM0, TILE_DIM1>,
+                                      RAJA::SizeList<TILE_DIM1, TILE_DIM0>,
                                       decltype(iSpace)>; //picks up the size of segments
 
 
@@ -274,17 +251,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       [=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {
         
-        int gId = col + Ncols * row;
-        //printf("gId = %d \n",gId);
         Atview(col, row) = RAJA_SEQ_TILE(row, col);
       }
 
      );
 
   checkResult<int>(Aview, Atview, Nrows, Ncols);
-
-  // printResult<int>(Atview, N);
-  exit(-1);
 
   //
   // Clean up.
@@ -308,7 +280,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Aview,
   bool match = true;
   for (int row = 0; row < Nrows; ++row) {
     for (int col = 0; col < Ncols; ++col) {
-      if (Aview(row, col) != Aview(row, col) ) {
+      if (Aview(row, col) != Atview(col, row) ) {
         match = false;
       }
     }
