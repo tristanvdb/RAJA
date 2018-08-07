@@ -85,9 +85,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Define num rows/cols in matrix
   //
-  const int factor = 4;
-  const int Nrows  = 8;
-  const int Ncols  = 12;
+  const int factor = 2;
+  const int Nrows  = 2*factor;
+  const int Ncols  = 3*factor;
 
   //
   // Allocate matrix data
@@ -212,21 +212,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using KERNEL_EXEC_POL = 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM1>, RAJA::omp_parallel_for_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM0>, RAJA::seq_exec,
+       RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM1>, RAJA::loop_exec,
+      //RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM1>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM0>, RAJA::loop_exec,
 
          RAJA::statement::SetShmemWindow<
-           RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+             RAJA::statement::For<0, RAJA::loop_exec,
                 RAJA::statement::Lambda<0>
               > //closes For 0
             > //closes For 1
 
-           ,RAJA::statement::For<0, RAJA::loop_exec, 
-             RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::Lambda<1>
-           > //closes For 0
-           > //closes For 1
+           //,RAJA::statement::For<0, RAJA::loop_exec, 
+           //RAJA::statement::For<1, RAJA::loop_exec,
+           //RAJA::statement::Lambda<1>
+           //> //closes For 0
+           //> //closes For 1
 
            > // closes shmem window
           > // closes Tile 0
@@ -242,14 +243,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {        
-        RAJA_SEQ_TILE(row, col) = Aview(row, col);        
+      [=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {
+        int num_threads = omp_get_num_threads();
+        int thread_id = omp_get_thread_num();
+        //printf("no of threads inside lambda %d, thread id = %d \n", num_threads, thread_id);
+        printf("row = %d, col = %d \n", row, col);
+        RAJA_SEQ_TILE(row, col) = Aview(row, col);
+        //  printf("RAJA_SEQ_TILE contents = %d \n", RAJA_SEQ_TILE(row,col));
+        //Aview(row, col);
       }
-      , 
-
-      [=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {        
-        Atview(col, row) = RAJA_SEQ_TILE(row, col);
-      }
+      //, 
+      //[=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {        
+      //Atview(col, row) = RAJA_SEQ_TILE(row, col);
+      //}
 
      );
 
