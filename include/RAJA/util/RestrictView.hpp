@@ -109,6 +109,15 @@ struct RestrictValue<T, rclass, true> {
   RAJA_HOST_DEVICE RAJA_INLINE RestrictValue operator-() const { return RestrictValue{-item}; }
   RAJA_HOST_DEVICE RAJA_INLINE RestrictValue operator~() const { return RestrictValue{~item}; }
 
+  // pre-increment operator
+  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue& operator++() { ++item; return *this; }
+  // pre-decrement operator
+  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue& operator--() { --item; return *this; }
+  // post-increment operator
+  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue operator++(int) { return RestrictValue{item++}; }
+  // post-decrement operator
+  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue operator--(int) { return RestrictValue{item--}; }
+
   // assignment operators
   template < typename T2, long r2 >
   RAJA_HOST_DEVICE RAJA_INLINE RestrictValue& operator= (RestrictValue<T2, r2> const& v) { item =  v.item; return *this; }
