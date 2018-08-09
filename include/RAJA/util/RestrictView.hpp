@@ -42,8 +42,8 @@ struct RestrictValue {
 
   RAJA_HOST_DEVICE RAJA_INLINE RestrictValue() : item() {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue(value_type const& v) : item(v) {}
-  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue(value_type&& v) : item(std::move(v)) {}
+  template < typename ... Ts >
+  RAJA_HOST_DEVICE RAJA_INLINE RestrictValue(Ts&& ...vs) : item(std::forward<Ts>(vs)...) {}
 
   template < typename T2, long r2 >
   RAJA_HOST_DEVICE RAJA_INLINE RestrictValue(RestrictValue<T2, r2> const& v) : item(v.item) {}
