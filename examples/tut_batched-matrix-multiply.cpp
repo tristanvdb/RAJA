@@ -20,7 +20,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/Timer.hpp"
-
+#include "RAJA/util/RestrictView.hpp"
 
 #include "memoryManager.hpp"
 
@@ -117,10 +117,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate space for data in layout 1
 //
-  double *A = memoryManager::allocate<double>(N_c * N_r * N);
-  double *B = memoryManager::allocate<double>(N_c * N_r * N);
-  double *C = memoryManager::allocate<double>(N_c * N_r * N);
-
+  //double *data = memoryManager::allocate<double>(N_c * N_r * N);
+  double *A = new double[N_c * N_r * N];
+  double *B = new double[N_c * N_r * N];
+  double *C = new double[N_c * N_r * N];
+ 
+  RAJA::RestrictValue<double, 1> *a = (RAJA::RestrictValue<double, 1>*)A;
+  RAJA::RestrictValue<double, 2> *b = (RAJA::RestrictValue<double, 2>*)B;
+  RAJA::RestrictValue<double, 3> *c = (RAJA::RestrictValue<double, 3>*)C;
+  
 //
 // Layout 1
 //
@@ -138,9 +143,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA::Layout objects may be templated on dimension, argument type, and 
 // index with unit stride. Here, the column index has unit stride (argument 2). 
 //  
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout1);
+  RAJA::View<RAJA::RestrictValue<double, 1>, RAJA::Layout<3, Index_type, 2>> Aview(a, layout1);
+  RAJA::View<RAJA::RestrictValue<double, 2>, RAJA::Layout<3, Index_type, 2>> Bview(b, layout1);
+  RAJA::View<RAJA::RestrictValue<double, 3>, RAJA::Layout<3, Index_type, 2>> Cview(c, layout1);
 
 //
 // Allocate space for data in layout 2
@@ -148,6 +153,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *A2 = memoryManager::allocate<double>(N_c * N_r * N);
   double *B2 = memoryManager::allocate<double>(N_c * N_r * N);
   double *C2 = memoryManager::allocate<double>(N_c * N_r * N);
+
+  RAJA::RestrictValue<double, 4> *a2 = (RAJA::RestrictValue<double, 4>*)A2;
+  RAJA::RestrictValue<double, 5> *b2 = (RAJA::RestrictValue<double, 5>*)B2;
+  RAJA::RestrictValue<double, 6> *c2 = (RAJA::RestrictValue<double, 6>*)C2;
 
 //
 // Permuted layout - equivalent to indexing using the following macro
@@ -158,9 +167,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::make_permuted_layout({{N, N_r, N_c}},
                                  RAJA::as_array<RAJA::Perm<1, 2, 0>>::get());
 
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Cview2(C2, layout2);
+  //RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
+  //RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
+  //RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Cview2(C2, layout2);
+  RAJA::View<RAJA::RestrictValue<double, 4>, RAJA::Layout<3, Index_type, 0>> Aview2(a2, layout2);
+  RAJA::View<RAJA::RestrictValue<double, 5>, RAJA::Layout<3, Index_type, 0>> Bview2(b2, layout2);
+  RAJA::View<RAJA::RestrictValue<double, 6>, RAJA::Layout<3, Index_type, 0>> Cview2(c2, layout2);
 
 //
 // Initialize data
