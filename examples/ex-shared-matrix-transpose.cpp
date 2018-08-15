@@ -62,6 +62,15 @@
 //
 const int DIM = 2;
 
+struct data_s{
+  int array[2][3];
+
+  int& operator()(RAJA::Index_type row, RAJA::Index_type col){
+    return array[row][col];
+  }
+  
+};
+
 //
 // Function for checking results
 //
@@ -200,7 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   printf("constructing a shared memory type \n");
-  using seq_shmem_t = RAJA::ShmemTile<RAJA::seq_shmem,
+  using seq_shmem_t = RAJA::ShmemTile<RAJA::omp_shmem,
                                       int,
                                       RAJA::ArgList<1, 0>,
                                       RAJA::SizeList<TILE_DIM1, TILE_DIM0>,
@@ -210,55 +219,64 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   seq_shmem_t RAJA_SEQ_TILE;
   printf("instantiated an object \n");
 
+  
   using KERNEL_EXEC_POL = 
     RAJA::KernelPolicy<
        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM1>, RAJA::loop_exec,
-      //RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_DIM1>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM0>, RAJA::loop_exec,
+      RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM0>, RAJA::loop_exec,
+                            //RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_DIM0>, RAJA::loop_exec
 
          RAJA::statement::SetShmemWindow<
-           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+           RAJA::statement::For<1, RAJA::loop_exec,
              RAJA::statement::For<0, RAJA::loop_exec,
-                RAJA::statement::Lambda<0>
+               RAJA::statement::Lambda<0>
               > //closes For 0
             > //closes For 1
-
-           //,RAJA::statement::For<0, RAJA::loop_exec, 
-           //RAJA::statement::For<1, RAJA::loop_exec,
-           //RAJA::statement::Lambda<1>
-           //> //closes For 0
-           //> //closes For 1
+           
+           //,RAJA::statement::OmpSyncThreads
+           
+           ,RAJA::statement::For<0, RAJA::loop_exec, 
+             RAJA::statement::For<1, RAJA::loop_exec,
+               RAJA::statement::Lambda<1>
+            > //closes For 0
+           > //closes For 1
 
            > // closes shmem window
           > // closes Tile 0
         > // closes Tile 1
     >; // closes policy list
 
-
+#if 1
   RAJA::kernel_param<KERNEL_EXEC_POL>(
 
-      iSpace,
-
-      RAJA::make_tuple(RAJA_SEQ_TILE),
+      iSpace,                                      
+                                      
+      //RAJA::tuple<double[2]>({0,0}),
+      RAJA::tuple<data_s>(data_s{}),
+      
+      //RAJA::make_tuple(RAJA_SEQ_TILE),
       //
       // (1) Lambda for inner loops to load data into the tile
       //
-      [=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {
-        int num_threads = omp_get_num_threads();
-        int thread_id = omp_get_thread_num();
-        //printf("no of threads inside lambda %d, thread id = %d \n", num_threads, thread_id);
-        printf("row = %d, col = %d \n", row, col);
-        RAJA_SEQ_TILE(row, col) = Aview(row, col);
-        //  printf("RAJA_SEQ_TILE contents = %d \n", RAJA_SEQ_TILE(row,col));
-        //Aview(row, col);
+      //[=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE, double& dot) {
+      [=](RAJA::Index_type col, RAJA::Index_type row, data_s& dot) {
+
+        int tx = col % TILE_DIM0;
+        int ty = row % TILE_DIM1;
+
+        dot(ty, tx) = Aview(row, col);
       }
-      //, 
-      //[=](RAJA::Index_type col, RAJA::Index_type row, seq_shmem_t &RAJA_SEQ_TILE) {        
-      //Atview(col, row) = RAJA_SEQ_TILE(row, col);
-      //}
+      ,      
+      [=](RAJA::Index_type col, RAJA::Index_type row, data_s& dot) {
+
+        int tx = col % TILE_DIM0;
+        int ty = row % TILE_DIM1;
+
+        Atview(col, row) = dot(ty, tx);
+      }
 
      );
-
+#endif
   checkResult<int>(Aview, Atview, Nrows, Ncols);
   printResult<int>(Atview, Ncols, Nrows);
 
