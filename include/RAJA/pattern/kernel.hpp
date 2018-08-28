@@ -27,23 +27,22 @@
 #ifndef RAJA_pattern_kernel_HPP
 #define RAJA_pattern_kernel_HPP
 
-
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/kernel/internal.hpp"
-
-#include "RAJA/util/chai_support.hpp"
-
-#include "RAJA/pattern/shared_memory.hpp"
+#include <iostream>
+#include <type_traits>
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#include <iostream>
-#include <type_traits>
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/shared_memory.hpp"
+
+#include "RAJA/util/chai_support.hpp"
 
 namespace RAJA
 {
@@ -107,6 +106,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                               ParamTuple &&params,
                               Bodies &&... bodies)
 {
+
   detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept
@@ -141,6 +141,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
                                     loop_data.get_begin_index_tuple());
 
   // Execute!
+  RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType>(loop_data);
 
 

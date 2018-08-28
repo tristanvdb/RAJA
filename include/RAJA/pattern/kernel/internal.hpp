@@ -28,9 +28,10 @@
 #define RAJA_pattern_kernel_internal_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
@@ -316,13 +317,8 @@ RAJA_INLINE void execute_statement_list(Data &&data)
       std::forward<Data>(data));
 }
 
-// Gives all GenericWrapper derived types something to enable_if on
-// in our thread_privatizer
-struct GenericWrapperBase {
-};
-
 template <typename Data, typename... EnclosedStmts>
-struct GenericWrapper : public GenericWrapperBase {
+struct GenericWrapper : GenericWrapperBase {
   using data_t = camp::decay<Data>;
 
   data_t &data;
@@ -358,24 +354,11 @@ struct NestedPrivatizer {
 };
 
 
-/**
- * @brief specialization of internal::thread_privatize for any wrappers derived
- * from GenericWrapper
- */
-template <typename T>
-constexpr RAJA_INLINE typename std::
-    enable_if<std::is_base_of<GenericWrapperBase, camp::decay<T>>::value,
-              NestedPrivatizer<T>>::type
-    thread_privatize(T &wrapper)
-{
-  return NestedPrivatizer<T>{wrapper};
-}
-
 
 }  // end namespace internal
 
 
-#ifdef RAJA_ENABLE_CHAI
+#if defined(RAJA_ENABLE_CHAI)
 
 namespace detail
 {
