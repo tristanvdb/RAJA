@@ -28,6 +28,25 @@
  */
 
 #if defined(RAJA_ENABLE_CUDA)
+
+class FOO
+{
+public:
+  FOO():m_chai()
+  {}
+
+  __host__ __device__ FOO( const FOO & source ):m_chai()
+  {
+#if !defined(__CUDA_ARCH__)
+    printf("calling FOO copy constructor\n");
+#endif
+  }
+
+  double m_chai[10];
+};
+
+
+
 class CHAIWRAPPER
 {
 public:
@@ -50,13 +69,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
 #if defined(RAJA_ENABLE_CUDA)
+  chai::ManagedArray<double> chaiArray(10);
+  FOO foo;
   CHAIWRAPPER wrapper;
   
+  printf("executing kernel... \n", i);
+
   RAJA::forall<RAJA::cuda_exec<10>>(RAJA::RangeSegment(0,10), [=] __device__ (int i) {
       printf("i = %d \n", i);
+      chaiArray[i] = i;
+      foo.m_chai[i] = i;
       wrapper.m_chai[i] = i;
     });
+  printf("done executing kernel! \n", i);
 #endif
+
 
   return 0;
 }
