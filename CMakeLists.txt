@@ -167,6 +167,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 
   if(ENABLE_EXAMPLES)
     add_subdirectory(examples)
+    add_subdirectory(chai_issue)
   endif()
 
   if (ENABLE_DOCUMENTATION)
