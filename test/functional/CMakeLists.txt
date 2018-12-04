@@ -13,10 +13,3 @@
 # For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
-
-add_subdirectory(unit)
-
-add_subdirectory(functional)
-
-add_subdirectory(legacy)
-
