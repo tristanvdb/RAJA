@@ -38,6 +38,10 @@
 #include "chai/ManagedArray.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_ZFP)
+#include "zfparray1.h"
+#endif
+
 namespace RAJA
 {
 
@@ -145,6 +149,14 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
                                             chai::ManagedArray<ValueType>,
                                             LayoutType,
                                             IndexTypes...>;
+
+#endif
+
+#if defined(RAJA_ENABLE_ZFP)
+
+template <typename ValueType, typename LayoutType>
+using CompressedView =
+    View<ValueType, LayoutType, zfp::array1<ValueType>::pointer>;
 
 #endif
 

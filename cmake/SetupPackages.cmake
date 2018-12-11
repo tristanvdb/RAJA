@@ -42,3 +42,10 @@ if (ENABLE_CHAI)
   find_package(chai)
   include_directories(${CHAI_INCLUDE_DIRS})
 endif()
+
+if (ENABLE_ZFP)
+  message(STATUS "ZFP enabled")
+  find_package(zfp)
+  include_directories(${ZFP_INCLUDE_DIRS})
+endif()
+

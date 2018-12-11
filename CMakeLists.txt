@@ -27,7 +27,7 @@ if (NOT RAJA_LOADED)
 
   mark_as_advanced(RAJA_LOADED)
 
-  cmake_minimum_required (VERSION 3.3)
+  cmake_minimum_required (VERSION 3.8)
 
   # C is required for googletest to find Threads
   project(RAJA LANGUAGES CXX C
@@ -103,6 +103,12 @@ if (NOT RAJA_LOADED)
     set (raja_depends
       ${raja_depends}
       chai)
+  endif ()
+
+  if (ENABLE_ZFP)
+    set (raja_depends
+      ${raja_depends}
+      zfp)
   endif ()
 
   if (ENABLE_TBB)

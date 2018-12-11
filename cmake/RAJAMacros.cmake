@@ -27,6 +27,10 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON chai)
   endif ()
 
+  if (ENABLE_ZFP)
+    list (APPEND arg_DEPENDS_ON zfp)
+  endif ()
+
   if (ENABLE_OPENMP)
     list (APPEND arg_DEPENDS_ON openmp)
   endif ()
