@@ -44,7 +44,7 @@ if (ENABLE_CHAI)
 endif()
 
 if (ENABLE_ZFP)
-  message(STATUS "ZFP enabled")
+  message(STATUS "ZFP enabled ${zfp_DIR}")
   find_package(zfp)
   include_directories(${ZFP_INCLUDE_DIRS})
 endif()

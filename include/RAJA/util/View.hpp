@@ -45,6 +45,26 @@
 namespace RAJA
 {
 
+
+#if defined(RAJA_ENABLE_ZFP)
+template <typename ValueType, typename PointerType>
+struct ReferenceTypeHelper {
+  using type = typename std::conditional<
+    std::is_same<
+      PointerType,
+      typename zfp::array1<ValueType>::pointer
+    >::value,
+    typename zfp::array1<ValueType>::reference,
+    ValueType &
+  >::type;
+};
+#else
+template <typename ValueType, typename PointerType>
+struct ReferenceTypeHelper {
+  using type = ValueType &;
+};
+#endif
+
 template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
@@ -59,6 +79,8 @@ struct View {
                               >::type
                           >::type;
   using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
+
+  using reference_type = typename ReferenceTypeHelper<value_type, pointer_type>::type;
 
   layout_type const layout;
   pointer_type data;
@@ -95,10 +117,10 @@ struct View {
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE reference_type operator()(Args... args) const
   {
     auto idx = stripIndexType(layout(args...));
-    auto &value = data[idx];
+    reference_type value = data[idx];
     return value;
   }
 };
@@ -156,7 +178,7 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
 
 template <typename ValueType, typename LayoutType>
 using CompressedView =
-    View<ValueType, LayoutType, zfp::array1<ValueType>::pointer>;
+    View<typename zfp::array1<ValueType>::reference, LayoutType, typename zfp::array1<ValueType>::pointer>;
 
 #endif
 

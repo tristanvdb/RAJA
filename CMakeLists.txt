@@ -27,7 +27,7 @@ if (NOT RAJA_LOADED)
 
   mark_as_advanced(RAJA_LOADED)
 
-  cmake_minimum_required (VERSION 3.8)
+  cmake_minimum_required (VERSION 3.3)
 
   # C is required for googletest to find Threads
   project(RAJA LANGUAGES CXX C
