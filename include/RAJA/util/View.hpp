@@ -45,18 +45,22 @@
 namespace RAJA
 {
 
-
 #if defined(RAJA_ENABLE_ZFP)
-template <typename ValueType, typename PointerType>
+template <
+  typename ValueType,
+  typename PointerType,
+  typename = typename std::remove_pointer<PointerType>::type
+>
 struct ReferenceTypeHelper {
-  using type = typename std::conditional<
-    std::is_same<
-      PointerType,
-      typename zfp::array1<ValueType>::pointer
-    >::value,
-    typename zfp::array1<ValueType>::reference,
-    ValueType &
-  >::type;
+  using type = typename PointerType::reference_t;
+};
+
+template <
+  typename ValueType,
+  typename PointerType
+>
+struct ReferenceTypeHelper<ValueType, PointerType, ValueType> {
+  using type = ValueType &;
 };
 #else
 template <typename ValueType, typename PointerType>
@@ -173,15 +177,6 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
                                             IndexTypes...>;
 
 #endif
-
-#if defined(RAJA_ENABLE_ZFP)
-
-template <typename ValueType, typename LayoutType>
-using CompressedView =
-    View<typename zfp::array1<ValueType>::reference, LayoutType, typename zfp::array1<ValueType>::pointer>;
-
-#endif
-
 
 template <typename ViewType, typename AtomicPolicy = RAJA::atomic::auto_atomic>
 struct AtomicViewWrapper {
