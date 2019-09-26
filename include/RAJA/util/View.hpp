@@ -109,7 +109,7 @@ struct ViewConfigHelper<ValueType, ConfigType, true, false>
 
 template <typename PointerType, typename LayoutT, size_t n_dims, size_t slow_dims, bool user_array_on_fast_dims>
 struct SizeHelper {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     static_assert(n_dims > 1);
     static_assert(slow_dims < n_dims);
 
@@ -125,7 +125,7 @@ struct SizeHelper {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 2, 1, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0];
     fast_size = layout.sizes[1];
   }
@@ -133,7 +133,7 @@ struct SizeHelper<PointerType, LayoutT, 2, 1, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 3, 1, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0];
     fast_size = layout.sizes[1] * layout.sizes[2];
   }
@@ -141,7 +141,7 @@ struct SizeHelper<PointerType, LayoutT, 3, 1, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 3, 2, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1];
     fast_size = layout.sizes[2];
   }
@@ -149,7 +149,7 @@ struct SizeHelper<PointerType, LayoutT, 3, 2, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 4, 1, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0];
     fast_size = layout.sizes[1] * layout.sizes[2] * layout.sizes[3];
   }
@@ -157,7 +157,7 @@ struct SizeHelper<PointerType, LayoutT, 4, 1, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 4, 2, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1];
     fast_size = layout.sizes[2] * layout.sizes[3];
   }
@@ -165,7 +165,7 @@ struct SizeHelper<PointerType, LayoutT, 4, 2, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 4, 3, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1] * layout.sizes[2];
     fast_size = layout.sizes[3];
   }
@@ -173,7 +173,7 @@ struct SizeHelper<PointerType, LayoutT, 4, 3, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 5, 1, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0];
     fast_size = layout.sizes[1] * layout.sizes[2] * layout.sizes[3] * layout.sizes[4];
   }
@@ -181,7 +181,7 @@ struct SizeHelper<PointerType, LayoutT, 5, 1, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 5, 2, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1];
     fast_size = layout.sizes[2] * layout.sizes[3] * layout.sizes[4];
   }
@@ -189,7 +189,7 @@ struct SizeHelper<PointerType, LayoutT, 5, 2, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 5, 3, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1] * layout.sizes[2];
     fast_size = layout.sizes[3] * layout.sizes[4];
   }
@@ -197,7 +197,7 @@ struct SizeHelper<PointerType, LayoutT, 5, 3, user_array_on_fast_dims> {
 
 template <typename PointerType, typename LayoutT, bool user_array_on_fast_dims>
 struct SizeHelper<PointerType, LayoutT, 5, 4, user_array_on_fast_dims> {
-  inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
+  inline static void get_sizes(PointerType const, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     slow_size = layout.sizes[0] * layout.sizes[1] * layout.sizes[2] * layout.sizes[3];
     fast_size = layout.sizes[4];
   }
@@ -207,7 +207,7 @@ template <typename PointerType, typename LayoutT, size_t slow_dims>
 struct SizeHelper<PointerType, LayoutT, 1, slow_dims, false> {
   inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     size_t full_size = layout.sizes[0];
-    slow_size = data[0].size();
+    slow_size = data[0].data().size();
     fast_size = full_size / slow_size;
   }
 };
@@ -216,7 +216,7 @@ template <typename PointerType, typename LayoutT, size_t slow_dims>
 struct SizeHelper<PointerType, LayoutT, 1, slow_dims, true> {
   inline static void get_sizes(PointerType const data, LayoutT const & layout, size_t & slow_size, size_t & fast_size) {
     size_t full_size = layout.sizes[0];
-    fast_size = data[0].size();
+    fast_size = data[0].data().size();
     slow_size = full_size / fast_size;
   }
 };  
